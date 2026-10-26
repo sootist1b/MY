@@ -434,6 +434,9 @@ html,body{background:var(--canvas);color:var(--ink)}
 @media(max-width:1400px){.tabs .tab{font-size:11px;padding:0 8px}.tabs .tab-num{display:none}.app-brand{flex-basis:75px}.live-card h2{font-size:13px}.live-card header span{font-size:9px}.executive-filters>input,.executive-filters>select,.executive-filters>button{font-size:10px!important}.executive-filters>input{max-width:170px}.table-scope{font-size:9px}.chart-key span{font-size:10px}}
 @media(max-width:840px){.tabs .tab{font-size:9px;padding:0 5px}.app-brand{flex-basis:auto}.tabs .tab-num{display:none}#live-dashboard,#live-dashboard.library-mode{grid-template-rows:66px minmax(175px,.8fr) minmax(250px,1.5fr)}#live-dashboard.overview-only{grid-template-rows:66px minmax(0,1fr)}.executive-filters{height:66px}.executive-filters>input,.executive-filters>select,.executive-filters>button{height:26px;font-size:10px!important}.live-card h2{font-size:11px}.live-card header span{display:none}.chart-key span{font-size:8px}.live-table{font-size:9px}.live-toolbar h2{font-size:10px}.live-data footer{font-size:8px}}
 .live-card .on-warning{fill:#493900!important}.live-table th{word-break:keep-all;overflow-wrap:anywhere}.live-table td{word-break:normal}
+.summary-table thead th{padding:4px 1px;vertical-align:middle}.summary-table .summary-production{background:#e4edf8!important}.summary-table .summary-status{background:#dce4f4!important;color:#263f6a!important}.summary-table .summary-planning{background:#e9e9fa!important}.summary-table .summary-execution{background:#e3f0ed!important}.summary-table .summary-material{background:#f0e8f5!important}.summary-table th.summary-정상{background:#d1eedc!important;color:#126a37!important}.summary-table th.summary-주의{background:#fff0b3!important;color:#795200!important}.summary-table th.summary-위험{background:#fbd4db!important;color:#a12035!important}.summary-source-records{margin:0 22px 18px;border:1px solid var(--line);border-radius:6px;background:#fff}.summary-source-records summary{padding:10px;cursor:pointer;font-size:11px;color:var(--sub)}.summary-source-records h3{font-size:12px;padding:0 16px}.summary-source-records .cell-detail-grid{padding:0 12px 12px}.summary-table thead{height:auto}
+#live-dashboard .summary-table th.summary-key,#live-dashboard .summary-table td.summary-key,#live-dashboard .summary-table td.summary-key.merged-descriptor{background:#dfe9f7!important;color:#294568!important}#live-dashboard .summary-table .key-end{border-right:2px solid #91a9cc!important}.summary-table thead th.summary-정상,.summary-table thead th.summary-주의,.summary-table thead th.summary-위험{font-size:clamp(8px,.64vw,12px);padding-left:0;padding-right:0;white-space:nowrap}.summary-table td[data-colindex="6"]{font-size:clamp(9px,.75vw,12px)}
+.summary-table th.summary-key{white-space:nowrap}.summary-table th[data-field="17"]{white-space:nowrap;font-size:clamp(9px,.65vw,12px)}
 
 </style>
 <!-- END dashboard.css -->
@@ -1301,20 +1304,44 @@ const PLANNING_DEMO = (() => {
 
 </script>
 <!-- END planning-data.js -->
+<!-- BEGIN overview-schema.js -->
+<script>
+/* Requested executive summary schema. New metrics are explicit illustrative data;
+   MGb from the old source is never relabelled as 억EQ. */
+const OVERVIEW_SCHEMA=(()=>{
+ const statuses=['정상','주의','위험'],stages=['입고','공출','WF 공급','Substrate','PCB','PMIC','RCD'];
+ const keyColumns=['FAM1','PRODUCT','DR','VER','응용','거래선','ITEM'];
+ const columns=[...keyColumns,'총 제품수','MYD 제품수',...['M0','M1','M2','M3'].map(m=>`생산계획 (억EQ) / ${m}`),...['M0','M1','M2','M3'].map(m=>`STATUS / 계획수립 / (MYD 비중) / ${m}`),'STATUS / 당월실행 / M0 / TTL',...stages.flatMap((stage,i)=>statuses.map(status=>`STATUS / ${i<3?'당월실행 / M0':'자재확보'} / ${stage} / ${status}`))];
+ function build(source,demo){const groups=new Map();for(const member of source){const key=JSON.stringify([member.fam,member.product,member.dr,member.ver,member.app,member.customer,member.item]);if(!groups.has(key))groups.set(key,[]);groups.get(key).push(member);}
+  return [...groups.values()].map((members,i)=>{const first=members[0],total=demo?18+(i%5)*3:new Set(members.map(r=>r.item)).size,myd=demo?total-3-(i%3):null,production=demo?Array.from({length:4},(_,m)=>Number((.72+i*.08+m*.06).toFixed(2))):Array(4).fill(null),share=demo?Array.from({length:4},(_,m)=>Number((100*myd/total+m*.5).toFixed(1))):Array(4).fill(null),progress=stages.map((_,stage)=>{if(!demo)return [null,null,null];const risk=i%3===2&&(i+stage)%4===0?2:0,caution=i%3===0?0:(i+stage)%3===0?3:1;return [myd-risk-caution,caution,risk];}),values=[first.fam,first.product,first.dr,first.ver,first.app,first.customer,first.item,total,myd,...production,...share,myd,...progress.flat()];
+   return {FAM1:first.fam,PRODUCT:first.product,DR:first.dr,VER:first.ver,응용:first.app,거래선:first.customer,ITEM:first.item,values,members,demo,progress,status:demo?(progress.some(v=>v[2]>0)?'위험':progress.some(v=>v[1]>0)?'주의':'정상'):'미제공'};
+  });
+ }
+ function header(){const metadata=[...keyColumns,'총<br>제품수','MYD<br>제품수'].map((name,i)=>`<th rowspan="5" scope="col" data-field="${i}" class="${i<7?'summary-key':''} ${i===6?'key-end':''}">${name}</th>`).join(''),months=['M0','M1','M2','M3'];return `<tr>${metadata}<th rowspan="4" colspan="4" scope="colgroup" class="summary-production">생산계획 (억EQ)</th><th colspan="26" scope="colgroup" class="summary-status">STATUS</th></tr>
+ <tr><th colspan="4" scope="colgroup" class="summary-planning">계획수립</th><th colspan="10" scope="colgroup" class="summary-execution">당월실행</th><th colspan="12" scope="colgroup" class="summary-material">자재확보</th></tr>
+ <tr><th rowspan="2" colspan="4" scope="colgroup" class="summary-planning">(MYD 비중)</th><th colspan="10" scope="colgroup" class="summary-execution">M0</th>${stages.slice(3).map(name=>`<th rowspan="2" colspan="3" scope="colgroup" class="summary-material">${name}</th>`).join('')}</tr>
+ <tr><th rowspan="2" scope="col" data-field="17" class="summary-execution">TTL</th>${stages.slice(0,3).map(name=>`<th colspan="3" scope="colgroup" class="summary-execution">${name}</th>`).join('')}</tr>
+ <tr>${months.map((m,i)=>`<th scope="col" data-field="${9+i}" class="summary-production">${m}</th>`).join('')}${months.map((m,i)=>`<th scope="col" data-field="${13+i}" class="summary-planning">${m}</th>`).join('')}${stages.flatMap((_,stage)=>statuses.map((status,j)=>`<th scope="col" data-field="${18+stage*3+j}" class="summary-${status}">${status}</th>`)).join('')}</tr>`;}
+ const widths=[4.5,5,3,4,4,4,9.5,3,3,...Array(8).fill(3.5),...Array(22).fill(32/22)];
+ return {columns,keyColumns,stages,statuses,build,header,widths,totalIndex:7,mydIndex:8,productionStart:9,shareStart:13,ttlIndex:17,statusStart:18};
+})();
+
+</script>
+<!-- END overview-schema.js -->
 <!-- BEGIN dashboard.js -->
 <script>
 /* Live executive views reuse the source HTML's illustrative datasets. No external dependencies. */
 (() => {
  const $=id=>document.getElementById(id), esc=escapeHtml;
- const names=['통합현황','입고실적','공출실적','공급진척','자재확보','차트라이브러리'];
+ const names=['종합대시보드','입고진척','공출진척','WF공급진척','자재확보','차트라이브러리'];
  const tabTypes=[0,1,2,3,4,5],tabIds=['S_D01','S_U01','S_U02','S_U03','S_U04','GALLERY'];
  let planningMode='demo';
  const inKeys=['WORKDATE','COMP_PRODGROUP','COMP_DESIGN_RULE','COMP_DENSITY','VERSION','APPLICATION','DENSITYB','MODEL','PKGTYPE','ITEM','MONTH','STAUS','PLANQTY','ACTUALQTY','STD_DAY_PLAN','ACT_DATE','ACT_DAY_PROGRESS','MYD_PLAN','MYD_ACTUALQTY','STD_MYD_DAY_PLAN','MYD_ACT_DATE','MYD_ACT_DAY_PROGRESS'];
  const chartChoices=names.map(()=>[]);let chartIndex=0;
  const sources=[exRows,inboundRows,outboundRows,supplyRows,materialRows];
- const keys=[exFlatTitles,inKeys,opsDefs.outbound.keys,supplyKeys,materialKeys];
- const labels=[['PRODUCT','상태','ITEM'],['제품군','상태','월'],['제품군','상태','기준일'],['구분1','확보 상태','구분3'],['자재군','상태','GEO RISK']];
- const detailLabels=['응용','응용','패키지','구분2','FAM1'];
+ const keys=[OVERVIEW_SCHEMA.columns,inKeys,opsDefs.outbound.keys,supplyKeys.slice(3),materialKeys];
+ const labels=[['FAM1','상태','VER'],['제품군','상태','월'],['제품군','상태','기준일'],['구분1','확보 상태','구분3'],['자재군','상태','GEO RISK']];
+ const detailLabels=['DR','응용','패키지','구분2','FAM1'];
  const descriptions=['품목별 계획·입고·진척·부품 수급을 전체 열 기준으로 확인합니다.','전체 월·제품군의 입고 계획, 실제 입고 및 MYD 진척을 비교합니다.','모든 기준일의 공출 실적과 MCS·MOD 재공을 함께 확인합니다.','입고 계획·잔여 물량부터 CHIP 확보율, B/E·EDS 재공까지 확인합니다.','자재별 안전재고 목표, 월별 보유·입고·소진 및 지정학 리스크를 확인합니다.'];
  const state=names.map(()=>({q:'',group:'',status:'',period:'',detail:'',columnFilters:{},sort:null,stage:null,graphFilter:null,mapSelection:null}));
  let active=Math.max(0,tabIds.indexOf(location.hash.slice(1))),librarySource=0;
@@ -1322,7 +1349,7 @@ const PLANNING_DEMO = (() => {
  const dialog=document.createElement('dialog');dialog.id='cell-detail';dialog.setAttribute('aria-labelledby','cell-detail-title');document.body.append(dialog);
  const columnDialog=document.createElement('dialog');columnDialog.id='column-config';columnDialog.setAttribute('aria-labelledby','column-config-title');document.body.append(columnDialog);
  let detailSnapshot=[],detailColumn=0,detailStart=0,detailSpan=1,detailOffset=0,detailFocus=null;
- const project=r=>({group:r.product,status:exHasRisk(r)?'위험':exHasWarn(r)?'주의':'정상',period:r.item,detail:r.app,raw:r,plan:r.plan,actual:r.actual,values:exAllCells(r)});
+ const project=r=>({group:r.FAM1,status:r.status,period:r.VER,detail:r.DR,raw:r,plan:r.values[OVERVIEW_SCHEMA.productionStart]??0,actual:0,values:r.values});
  function normalize(r,t){
   if(t===0)return project(r);
   if(t===1)return {group:r.COMP_PRODGROUP,status:r.STAUS,period:r.MONTH,detail:r.APPLICATION,raw:r,plan:r.PLANQTY,actual:r.ACTUALQTY,values:inKeys.map(k=>r[k])};
@@ -1331,7 +1358,7 @@ const PLANNING_DEMO = (() => {
   return {group:r.MAT_CATG1,status:r.STATUS,period:r.GEO_RISK,detail:r.FAM1,raw:r,plan:r.SS_TARGET,actual:r.M0_BOH,values:keys[t].map(k=>r[k])};
  }
  const type=()=>tabTypes[active];
- function all(){let source=sources[type()]||[];if(type()===0&&planningMode==='demo'&&!source.some(r=>/NAND|NOR|FLASH/i.test(r.product)))source=[...source,...PLANNING_DEMO.flash];return source.map(r=>normalize(r,type()));}
+ function all(){let source=sources[type()]||[];if(type()===0&&planningMode==='demo'&&!source.some(r=>/NAND|NOR|FLASH/i.test(r.product)))source=[...source,...PLANNING_DEMO.flash];return type()===0?OVERVIEW_SCHEMA.build(source,planningMode==='demo').map(project):source.map(r=>normalize(r,type()));}
  function graphIdentity(r){return type()===1?r.raw.ITEM:type()===2?r.raw.COMPCODE:type()===3?r.raw['구분3']:r.raw.MAT_CODE;}
  function relatedMaster(r){return (PLANNING_DEMO.master[type()===1?'inbound':type()===2?'outbound':'supply']||[]).find(m=>m.id===graphIdentity(r));}
  function rows(ignore=''){const s=state[active],filtered=all().filter(r=>(!s.q||r.values.some(v=>String(v).toLowerCase().includes(s.q.toLowerCase())))&&['group','status','period','detail'].every(k=>(Array.isArray(ignore)?ignore.includes(k):ignore===k)||!s[k]||r[k]===s[k])&&(!s.stage||ignore==='stage'||type()!==0||r.raw.stages[s.stage.index][{정상:'normal',주의:'caution',위험:'risk'}[s.stage.status]]>0)&&(!s.graphFilter||(Array.isArray(ignore)?ignore.includes('graphFilter'):ignore==='graphFilter')||(s.graphFilter.key==='date'?String(type()===1?r.raw.WORKDATE:type()===2?r.raw.NOW_DATE:'')===s.graphFilter.value:relatedMaster(r)?.[s.graphFilter.key]===s.graphFilter.value))&&(!s.mapSelection||(Array.isArray(ignore)?ignore.includes('mapSelection'):ignore==='mapSelection')||(r.group===s.mapSelection.group&&r.status===s.mapSelection.status))&&Object.entries(s.columnFilters).every(([index,f])=>{const v=r.values[+index];if(f.op==='gte')return Number(v)>=Number(f.value);if(f.op==='lte')return Number(v)<=Number(f.value);if(f.op==='eq')return String(v).toLowerCase()===f.value.toLowerCase();return String(v).toLowerCase().includes(f.value.toLowerCase());}));
@@ -1424,7 +1451,7 @@ const PLANNING_DEMO = (() => {
   [{id:'materialShortage',title:'자재군별 목표 미달 물량',note:'Σ max(SS_TARGET − M0_BOH, 0) · 초과 재고로 상쇄 안 함',draw:materialShortage},{id:'materialRisk',title:'GEO 리스크 × 운영 상태',note:'셀: 자재 수 · 행명: GEO 필터 · 셀: GEO·상태 교차 필터',draw:materialRisk},{id:'trend',title:'월별 보유·입고·소진 흐름',note:'M0~M2 BOH / RTP / OUT · 원본 전망값 비교',draw:trend}]
  ][t];}
  function card(config){const index=chartIndex++,choices=workflowCharts(),selected=choices.find(c=>c.id===chartChoices[active][index])||config;return `<article class="live-card" data-analysis="${selected.id}"><header><div class="chart-title-row"><h2>${selected.title}</h2><select data-chart="${index}" aria-label="${index+1}번 분석 선택">${choices.map(c=>`<option value="${c.id}" ${c.id===selected.id?'selected':''}>${c.title}</option>`).join('')}</select></div><span>${selected.note}</span></header>${selected.draw()}</article>`;}
- function cellTone(r,i,t){
+ function cellTone(r,i,t){if(t===0){if(i>=OVERVIEW_SCHEMA.statusStart&&typeof r.values[i]==='number'&&r.values[i]>0)return ['cell-good','cell-warning','cell-danger'][(i-OVERVIEW_SCHEMA.statusStart)%3];return '';}
   const v=r.values[i],k=keys[t][i];
   if(['정상','낮음'].includes(v))return 'cell-good';
   if(['주의','중간'].includes(v))return 'cell-warning';
@@ -1436,24 +1463,28 @@ const PLANNING_DEMO = (() => {
   return '';
  }
  function merges(rs,t){const skip=rs.map(()=>new Set()),spans=rs.map(()=>({}));
-  const descriptors=t===0?[0,1,2,3,4,5]:t===1?[0,1,2,3,4,5,6,7,8,10]:t===2?[0,1,2,3,4,5,6,7]:t===3?[0,1,2]:[0,1,2,4,5];
-  for(const col of descriptors){let path;if(t===0)path=exDescriptorMergePaths[col];else path=descriptors.filter(c=>c<=col);for(let i=0;i<rs.length;){let end=i+1;while(end<rs.length&&path.every(c=>rs[i].values[c]===rs[end].values[c]))end++;if(end-i>1){spans[i][col]=end-i;for(let j=i+1;j<end;j++)skip[j].add(col);}i=end;}}
+  const descriptors=t===0?[0,1,2,3,4,5,6]:t===1?[0,1,2,3,4,5,6,7,8,10]:t===2?[0,1,2,3,4,5,6,7]:t===3?[]:[0,1,2,4,5];
+  for(const col of descriptors){let path;if(t===0)path=Array.from({length:col+1},(_,i)=>i);else path=descriptors.filter(c=>c<=col);for(let i=0;i<rs.length;){let end=i+1;while(end<rs.length&&path.every(c=>rs[i].values[c]===rs[end].values[c]))end++;if(end-i>1){spans[i][col]=end-i;for(let j=i+1;j<end;j++)skip[j].add(col);}i=end;}}
   return {skip,spans};}
+ function formatCell(v,index,t=type()){if(v===null||v===undefined)return '—';if(t===0&&index>=OVERVIEW_SCHEMA.productionStart&&index<OVERVIEW_SCHEMA.productionStart+4)return Number(v).toFixed(2);if(t===0&&index>=OVERVIEW_SCHEMA.shareStart&&index<OVERVIEW_SCHEMA.shareStart+4)return pct(v);return typeof v==='number'?(keys[t][index].includes('PROGRESS')||keys[t][index].endsWith('확보율')?pct(v):fmt(v)):v;}
+ function wfSupplyHeader(){const top=[['입고현황',6],['CHIP 확보율',2],['CHIP공급필요',4],['B/E 재공 확보 현황',8],['EDS재공보유',7]],middle=[['10월 입고',4],['11월 입고',2],['10월분',1],['11월분',1],['10월분',2],['11월분',2],['재공입고分',8],['보유일',7]],leaf=['계획','실적','잔여','진척일','실적','진척일','확보율','확보율','필요','일','필요','일','MDL','TEST','HOLD','반품 재공','ASSY','YHS1','불용 재공','計','KST3','EDS','KST1','HOLD','불용 재공','재공 (K)','보유일'];return '<tr>'+top.map(([name,span])=>`<th colspan="${span}" scope="colgroup">${name}</th>`).join('')+'</tr><tr>'+middle.map(([name,span])=>`<th colspan="${span}" scope="colgroup">${name}</th>`).join('')+'</tr><tr>'+leaf.map(name=>`<th scope="col">${name}</th>`).join('')+'</tr>';}
  function table(rs){const t=type(),cols=keys[t],{skip,spans}=merges(rs,t);let head;
- if(t===0)head=exFullMatrixHeader();
+ if(t===0)head=OVERVIEW_SCHEMA.header();
+ else if(t===3)head=wfSupplyHeader();
  else {
   // Reuse the exact full-data dialog header, including all source field names
   // and the three-level supply header. Only the container moves into the body.
   const template=document.createElement('template');
   template.innerHTML=t===1?inboundTable([]):opTable(['overview','inbound','outbound','supply','material'][t],[]);
   const sourceHead=template.content.querySelector('thead');
-  [...sourceHead.rows[sourceHead.rows.length-1].cells].forEach((cell,i)=>cell.title=cols[i]);
+  [...sourceHead.rows[sourceHead.rows.length-1].cells].forEach((cell,i)=>{cell.title=cols[i];if(t!==3)cell.textContent=cols[i];});
   head=sourceHead.innerHTML;
  }
- const sortable=document.createElement('template');sortable.innerHTML='<table><thead>'+head+'</thead></table>';let leafIndex=0;
- for(const tr of sortable.content.querySelector('thead').rows)for(const th of tr.cells){if(th.colSpan===1&&(th.rowSpan>1||tr===sortable.content.querySelector('thead').rows[sortable.content.querySelector('thead').rows.length-1])){const col=leafIndex++,sort=state[active].sort,dir=sort?.index===col?sort.direction:null;if(t>0){const readable={WORKDATE:'기준일',NOW_DATE:'기준일',COMP_PRODGROUP:'제품군',COMP_PRODUCT:'제품군',COMP_DESIGN_RULE:'DR',COMP_DENSITY:'제품',COMP_SUBPRODUCT:'제품',VERSION:'버전',APPLICATION:'응용',DENSITYB:'밀도',MODEL:'모델',PKGTYPE:'패키지',ITEM:'ITEM',MONTH:'월',COMPCODE:'품목코드',GEO_RISK:'GEO 위험',SMT:'SMT',FAM1:'FAM1',SS_TARGET:'확보 목표',MAT_CODE:'자재코드',MAT_CATG1:'자재군',MAT_CATG2:'세부 자재',ACT_DATE:'기준 실적',STD_DAY_PLAN:'기준 계획',MYD_ACT_DATE:'MYD 기준 실적',STD_MYD_DAY_PLAN:'MYD 기준 계획'};if(t!==3)th.textContent=readable[cols[col]]||compactNames[cols[col]]||th.textContent;}th.dataset.sort=col;th.tabIndex=0;th.setAttribute('aria-sort',dir==='asc'?'ascending':dir==='desc'?'descending':'none');th.title=cols[col]+' · 클릭: 오름차순 → 내림차순 → 원본 순서';if(state[active].columnFilters[col])th.classList.add('column-filtered');}}
+ const sortable=document.createElement('template');sortable.innerHTML='<table><thead>'+head+'</thead></table>';const headerRows=[...sortable.content.querySelector('thead').rows],occupied=headerRows.map(()=>[]);
+ for(let row=0;row<headerRows.length;row++)for(const th of headerRows[row].cells){let col=0;while(occupied[row][col])col++;for(let r=row;r<row+th.rowSpan;r++)for(let c=col;c<col+th.colSpan;c++)occupied[r][c]=true;if(th.colSpan!==1||row+th.rowSpan!==headerRows.length)continue;
+  const sort=state[active].sort,dir=sort?.index===col?sort.direction:null;th.dataset.sort=col;th.tabIndex=0;th.setAttribute('aria-sort',dir==='asc'?'ascending':dir==='desc'?'descending':'none');th.title=cols[col]+' · 클릭: 오름차순 → 내림차순 → 원본 순서';if(state[active].columnFilters[col])th.classList.add('column-filtered');}
  head=sortable.content.querySelector('thead').innerHTML;
- return `<table class="live-table" aria-label="${names[t]} 전체 데이터 ${cols.length}열"><colgroup>${cols.map((k,i)=>`<col style="width:${t===0?exColumnPercents[i]:100/cols.length}%">`).join('')}</colgroup><thead>${head}</thead><tbody>${rs.length?rs.map((r,rowIndex)=>'<tr>'+r.values.map((v,i)=>{if(skip[rowIndex].has(i))return '';const span=spans[rowIndex][i]||1;const title=cols[i],value=typeof v==='number'?(title.includes('PROGRESS')||title.endsWith('확보율')?pct(v):fmt(v)):v;return `<td data-rowindex="${rowIndex}" data-colindex="${i}" data-span="${span}" tabindex="0" role="button" aria-label="${esc(title)} ${esc(value)} 상세정보${span>1?` · ${span}행 병합`:``}" ${span>1?`rowspan="${span}"`:``} title="${esc(title)}: ${esc(value)} · 클릭하여 상세정보" class="${cellTone(r,i,t)} ${span>1?`merged-descriptor`:``}" ${colors[v]?`style="color:${colors[v]}"`:''}>${esc(value)}</td>`;}).join('')+'</tr>').join(''):`<tr><td colspan="${cols.length}" class="no-results">일치하는 데이터가 없습니다. 조건을 해제해 주세요.</td></tr>`}</tbody></table>`;
+ return `<table class="live-table ${t===0?'summary-table':''}" aria-label="${names[t]} 전체 데이터 ${cols.length}열"><colgroup>${cols.map((k,i)=>`<col style="width:${t===0?OVERVIEW_SCHEMA.widths[i]:100/cols.length}%">`).join('')}</colgroup><thead>${head}</thead><tbody>${rs.length?rs.map((r,rowIndex)=>'<tr>'+r.values.map((v,i)=>{if(skip[rowIndex].has(i))return '';const span=spans[rowIndex][i]||1;const title=cols[i],value=formatCell(v,i,t);return `<td data-rowindex="${rowIndex}" data-colindex="${i}" data-span="${span}" tabindex="0" role="button" aria-label="${esc(title)} ${esc(value)} 상세정보${span>1?` · ${span}행 병합`:``}" ${span>1?`rowspan="${span}"`:``} title="${esc(title)}: ${esc(value)} · 클릭하여 상세정보" class="${t===0&&i<7?'summary-key':''} ${t===0&&i===6?'key-end':''} ${cellTone(r,i,t)} ${span>1?`merged-descriptor`:``}" ${colors[v]?`style="color:${colors[v]}"`:''}>${esc(value)}</td>`;}).join('')+'</tr>').join(''):`<tr><td colspan="${cols.length}" class="no-results">일치하는 데이터가 없습니다. 조건을 해제해 주세요.</td></tr>`}</tbody></table>`;
  }
  function fitTable(){
   const frame=host.querySelector('.live-table-frame'), table=frame?.querySelector('table');if(!table)return;
@@ -1473,7 +1504,7 @@ const PLANNING_DEMO = (() => {
   host.classList.toggle('library-mode',t===5);host.classList.toggle('overview-only',t===0);
   host.innerHTML=`${filterBar()}
   ${t===0?'':`<section class="live-charts" aria-label="업무별 요청 그래프">${charts}</section>`}
-  <section class="live-data"><div class="live-toolbar"><div><h2>${names[active]} · 전체 데이터 보기 <span>${rs.length} / ${all().length}행 · ${keys[t].length}열</span></h2></div><span class="table-scope">${type()===0&&!exRows.some(r=>/NAND|NOR|FLASH/i.test(r.product))?(planningMode==='demo'?'FLASH 추가 시연 · 원본 미제공 · ':'FLASH 원본 미제공 · '):''}${s.q||s.group||s.status||s.period||s.detail||s.stage||s.graphFilter||s.mapSelection||Object.keys(s.columnFilters).length?'상단 선택 조건 적용 중':'필터 없음 · 전체 원본 데이터'} · 헤더 클릭: 정렬 · 셀 클릭: 상세</span></div><div class="live-table-frame">${table(rs)}</div><footer><span class="status-legend"><i class="legend-green"></i>정상 <i class="legend-yellow"></i>주의 <i class="legend-red"></i>위험</span> 행·열 생략 및 페이지 분할 없음 <span>${t===0?'상태는 7개 진척·수급 중 위험 우선 분류':t===3?'파생 상태: CHIP 확보율 ≥95% 정상 / ≥80% 주의 / 그 외 위험':t===2?'전체 일자 원본 행 표시 · 계획의 날짜 간 합산은 기간 계획을 의미하지 않음':'원본 샘플 데이터 전체 표시'} · 단위는 원본 기준</span></footer></section>`;
+  <section class="live-data"><div class="live-toolbar"><div><h2>${names[active]} · 전체 데이터 보기 <span>${rs.length} / ${all().length}행 · ${keys[t].length}열</span></h2></div><span class="table-scope">${type()===0?(planningMode==='demo'?'종합 지표 추가 시연 · 억EQ · ':'원본 기준 · 미제공 지표 — · '):''}${s.q||s.group||s.status||s.period||s.detail||s.stage||s.graphFilter||s.mapSelection||Object.keys(s.columnFilters).length?'상단 선택 조건 적용 중':'필터 없음 · 전체 원본 데이터'} · 헤더 클릭: 정렬 · 셀 클릭: 상세</span></div><div class="live-table-frame">${table(rs)}</div><footer><span class="status-legend"><i class="legend-green"></i>정상 <i class="legend-yellow"></i>주의 <i class="legend-red"></i>위험</span> 행·열 생략 및 페이지 분할 없음 <span>${t===0?'생산계획: 억EQ · MYD 비중: % · 제품수·TTL·STATUS: 개':t===3?'파생 상태: CHIP 확보율 ≥95% 정상 / ≥80% 주의 / 그 외 위험':t===2?'전체 일자 원본 행 표시 · 계획의 날짜 간 합산은 기간 계획을 의미하지 않음':'원본 샘플 데이터 전체 표시'} · 단위는 원본 기준</span></footer></section>`;
   fitTable();
   history.replaceState(null,'','#'+tabIds[active]);
  }
@@ -1483,7 +1514,7 @@ const PLANNING_DEMO = (() => {
  columnDialog.addEventListener('submit',e=>{e.preventDefault();const index=+columnDialog.querySelector('#column-key').value,op=columnDialog.querySelector('#column-op').value,value=columnDialog.querySelector('#column-value').value.trim(),direction=columnDialog.querySelector('#column-sort').value,input=columnDialog.querySelector('#column-value');if(value&&['gte','lte'].includes(op)&&!Number.isFinite(Number(value))){input.setCustomValidity('숫자를 입력해 주세요.');input.reportValidity();return;}if(value)state[active].columnFilters[index]={op,value};else delete state[active].columnFilters[index];state[active].sort=direction?{index,direction}:null;columnDialog.close();paint();});
  columnDialog.addEventListener('input',e=>{if(e.target.id==='column-value')e.target.setCustomValidity('');});
  function toggleSort(header){const index=+header.dataset.sort,s=state[active],current=s.sort;s.sort=current?.index===index?(current.direction==='asc'?{index,direction:'desc'}:null):{index,direction:'asc'};paint();host.querySelector(`th[data-sort="${index}"]`)?.focus();}
- function showCellDetail(){const row=detailSnapshot[detailStart+detailOffset],cols=keys[type()],value=row.values[detailColumn];dialog.innerHTML=`<header class="cell-detail-head"><div><div class="live-eyebrow">${names[active]} / 원본 데이터</div><h2 id="cell-detail-title">${esc(cols[detailColumn])}</h2><p>${esc(value)} ${detailSpan>1?`<span class="merge-badge">${detailSpan}개 원본 행 병합</span>`:''}</p></div><button id="close-cell-detail" type="button" aria-label="상세정보 닫기">닫기 ×</button></header><div class="cell-detail-context"><span>조회 결과 ${detailStart+detailOffset+1}번째 원본 행 · ${cols.length}개 전체 필드</span>${detailSpan>1?`<label>병합에 포함된 행 <select id="cell-detail-row">${Array.from({length:detailSpan},(_,i)=>`<option value="${i}" ${i===detailOffset?'selected':''}>${detailStart+i+1}행 · ${esc(detailSnapshot[detailStart+i].group)} · ${esc(detailSnapshot[detailStart+i].period)}</option>`).join('')}</select></label>`:''}</div><div class="cell-detail-grid">${row.values.map((v,i)=>`<article class="${i===detailColumn?'selected-field':''} ${cellTone(row,i,type())}"><span>${esc(cols[i])}</span><strong>${esc(typeof v==='number'?fmt(v):v)}</strong></article>`).join('')}</div><footer>샘플 데이터 · 색상은 원본 상태 또는 시연 기준에 따른 분류입니다.</footer>`;}
+ function showCellDetail(){const row=detailSnapshot[detailStart+detailOffset],cols=keys[type()],value=row.values[detailColumn];dialog.innerHTML=`<header class="cell-detail-head"><div><div class="live-eyebrow">${names[active]} / 원본 데이터</div><h2 id="cell-detail-title">${esc(cols[detailColumn])}</h2><p>${esc(value)} ${detailSpan>1?`<span class="merge-badge">${detailSpan}개 원본 행 병합</span>`:''}</p></div><button id="close-cell-detail" type="button" aria-label="상세정보 닫기">닫기 ×</button></header><div class="cell-detail-context"><span>조회 결과 ${detailStart+detailOffset+1}번째 원본 행 · ${cols.length}개 전체 필드</span>${detailSpan>1?`<label>병합에 포함된 행 <select id="cell-detail-row">${Array.from({length:detailSpan},(_,i)=>`<option value="${i}" ${i===detailOffset?'selected':''}>${detailStart+i+1}행 · ${esc(detailSnapshot[detailStart+i].group)} · ${esc(detailSnapshot[detailStart+i].period)}</option>`).join('')}</select></label>`:''}</div><div class="cell-detail-grid">${row.values.map((v,i)=>`<article class="${i===detailColumn?'selected-field':''} ${cellTone(row,i,type())}"><span>${esc(cols[i])}</span><strong>${esc(formatCell(v,i))}</strong></article>`).join('')}</div>${type()===0?`<details class="summary-source-records"><summary>기존 상세 원본 · 구성 품목 ${row.raw.members.length}개</summary>${row.raw.members.map(member=>`<h3>${esc(member.item)}</h3><div class="cell-detail-grid">${exAllCells(member).map((v,i)=>`<article><span>${esc(exFlatTitles[i])}</span><strong>${esc(v)}</strong></article>`).join('')}</div>`).join('')}</details>`:''}<footer>샘플 데이터 · 색상은 원본 상태 또는 시연 기준에 따른 분류입니다.</footer>`;}
  function openCell(cell){detailFocus=cell;detailSnapshot=rows();detailStart=+cell.dataset.rowindex;detailColumn=+cell.dataset.colindex;detailSpan=+cell.dataset.span;detailOffset=0;showCellDetail();dialog.showModal();dialog.querySelector('button').focus();}
  dialog.addEventListener('click',e=>{if(e.target.id==='close-cell-detail'||e.target===dialog)dialog.close();});dialog.addEventListener('close',()=>detailFocus?.focus());dialog.addEventListener('change',e=>{if(e.target.id==='cell-detail-row'){detailOffset=+e.target.value;showCellDetail();dialog.querySelector('#cell-detail-row').focus();}});
  $('tabs').addEventListener('click',e=>{const b=e.target.closest('[data-live-tab]');if(b){active=+b.dataset.liveTab;state[active]={q:'',group:'',status:'',period:'',detail:'',columnFilters:{},sort:null,stage:null,graphFilter:null,mapSelection:null};host.hidden=false;paint();}});
