@@ -341,71 +341,50 @@ button,input{font:inherit}button{cursor:pointer}button:focus-visible{outline:2px
 @media(max-width:560px){#main.compact-layout .charts.inbound{grid-template-columns:1fr}.compact-table{font-size:9px}.compact-table th,.compact-table td{padding:3px}.view-group{flex:none}#main.compact-layout .table-panel{height:330px}}
 
 
-/* v1.2 — S_D01 full-matrix design: all 36 visible fields, two-tier headers,
-   visually merge only consecutive identical identifiers, no table scrolling.
-   Uses a single table/colgroup to guarantee header and data column alignment. */
-#exec-overview .ex-jumps{display:none!important}
-#exec-overview .ex-toolbar{justify-content:flex-end;flex-basis:30px;min-height:30px}
-#exec-overview .ex-metrics{flex-basis:68px;gap:7px}
-#exec-overview .ex-metric{padding:7px 12px}
-#exec-overview .ex-metric-number{font-size:21px}
-#exec-overview .ex-head{min-height:32px}
-#exec-overview{gap:8px;padding:10px 17px 11px}
-#exec-overview .ex-frame-top{height:32px;flex-basis:32px}
-#exec-overview .ex-frame-foot{height:23px;flex-basis:23px}
-#exec-overview #ex-scroller{overflow:hidden!important;position:relative;min-height:0;display:flex;align-items:stretch}
-#exec-overview #ex-table{table-layout:fixed!important;border-collapse:collapse!important;width:100%!important;min-width:0!important;margin:0;align-self:stretch;font-size:9px}
-#exec-overview #ex-table col{min-width:0}
-#exec-overview #ex-table th,#exec-overview #ex-table td{
- position:static!important;left:auto!important;top:auto!important;min-width:0!important;max-width:none!important;
- width:auto!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle;
- box-shadow:none!important;padding:3px 2px!important;border-right:1px solid #E6E9EF;border-bottom:1px solid #EDF0F2;
- text-align:center!important;line-height:1.12;
-}
-#exec-overview #ex-table thead th{white-space:normal!important;overflow:visible;text-overflow:clip;font-size:9px!important;font-weight:690!important;color:#465065!important}
-#exec-overview #ex-table thead tr:first-child th{height:31px!important;background:#F1F3F8!important;font-size:9px!important}
-#exec-overview #ex-table thead tr:nth-child(2) th{height:24px!important;background:#F8F8FA!important;font-size:8.5px!important}
-#exec-overview #ex-table thead tr:first-child th.group-plan{background:#EDEEFB!important;color:#2E3AAF!important}
-#exec-overview #ex-table thead tr:first-child th.group-stock{background:#EDF0F4!important}
-#exec-overview #ex-table thead tr:first-child th.group-in{background:#E9EDF8!important;color:#293B83!important}
-#exec-overview #ex-table thead tr:first-child th.group-progress{background:#EDF3F7!important;color:#395365!important}
-#exec-overview #ex-table thead tr:first-child th.group-supply{background:#F2F0F8!important;color:#55446B!important}
-#exec-overview #ex-table tbody td{height:var(--matrix-row-height,29px)!important;min-height:0;color:#323A48;font-size:9px}
-#exec-overview #ex-table tbody td.merged{font-size:9px;font-weight:710!important;color:#253653!important;background:#F2F5FC!important;border-right-color:#D7DEEF;text-align:left!important;padding-left:5px!important;vertical-align:middle!important}
-#exec-overview #ex-table tbody td.identity{font-size:9px;color:#383D48}
-#exec-overview #ex-table tbody td.item-name{text-align:left!important;padding-left:5px!important;font-size:8.8px;color:#272F40;font-weight:650}
-#exec-overview #ex-table tbody td.percent{font-variant-numeric:tabular-nums;font-size:8.7px;color:#3A4C6F}
-#exec-overview #ex-table tbody td.total-num{color:#273A68;font-weight:650}
-#exec-overview #ex-table tbody td.state-ok{color:#34674C;background:#F0F7F1}
-#exec-overview #ex-table tbody td.state-warn{color:#946012;background:#FFF8E8}
-#exec-overview #ex-table tbody td.state-risk{color:#A4243B;font-weight:750;background:#FFF0F3}
-#exec-overview #ex-table tbody td.state-zero{color:#A4A7AE}
-#exec-overview #ex-table tfoot td{height:var(--matrix-row-height,29px)!important;font-size:9px;font-weight:710;color:#263958;background:#ECEFF6!important;border-top:2px solid #AEB7CC!important}
-#exec-overview #ex-table .matrix-sep{border-left:1.5px solid #C8CEDB!important}
+/* ── v1.2: executive single-screen 36-column consolidated matrix ── */
+#exec-overview{gap:7px;padding:9px 12px 10px}
+#exec-overview .ex-head{min-height:27px}
+#exec-overview .ex-eyebrow{display:none}
+#exec-overview .ex-name{font-size:18px}
+#exec-overview .ex-metrics{flex-basis:49px;gap:6px}
+#exec-overview .ex-metric{padding:5px 10px;border-radius:8px}
+#exec-overview .ex-metric-label{font-size:9px}
+#exec-overview .ex-metric-number{font-size:17px}
+#exec-overview .ex-metric-foot{display:none}
+#exec-overview .ex-toolbar{justify-content:flex-end;min-height:29px;gap:7px}
+#exec-overview .ex-input{height:27px;min-width:170px;width:220px;font-size:10px}
+#exec-overview .ex-select{height:27px;font-size:10px;padding:4px 10px}
+#exec-overview .ex-frame-top{flex-basis:30px;height:30px;padding:0 10px}
+#exec-overview .ex-frame-title{font-size:11px}
 #exec-overview .ex-frame-tip{font-size:9px}
-#exec-overview .ex-frame-foot .ex-flag{white-space:nowrap}
-#exec-overview .ex-frame-foot .ex-dot{width:6px;height:6px}
-@media(max-width:1150px){
- #exec-overview .ex-metrics{flex-basis:60px}
- #exec-overview .ex-metric-number{font-size:18px}
- #exec-overview #ex-table td,#exec-overview #ex-table th{font-size:7.8px!important;padding:2px 1px!important}
- #exec-overview #ex-table tbody td.item-name{font-size:7.5px}
- #exec-overview #ex-table tbody td.merged{font-size:8px}
-}
-@media(max-width:680px){
- #exec-overview{padding:7px;gap:7px}
- #exec-overview .ex-head{flex-wrap:wrap}
- #exec-overview .ex-frame-top{padding:0 6px}
- #exec-overview .ex-frame-foot{padding:0 6px}
- #exec-overview .ex-frame-tip{display:none}
- #exec-overview #ex-table tbody td{font-size:6.8px!important}
- #exec-overview #ex-table thead th{font-size:6.7px!important}
-}
-@media print{
- #exec-overview #ex-table{width:100%!important}
- #exec-overview #ex-scroller{overflow:visible!important}
- #exec-overview #ex-table tbody td{height:19px!important}
-}
+#exec-overview .ex-frame-foot{height:25px;min-height:25px;padding:0 9px;font-size:9px}
+#exec-overview #ex-scroller{overflow:hidden!important;min-height:0;flex:1;width:100%}
+#exec-overview #ex-table{height:100%;width:100%;min-width:0!important;max-width:100%;table-layout:fixed;border-collapse:collapse;line-height:1.12;font-size:clamp(7.5px,.59vw,9.8px);font-variant-numeric:tabular-nums}
+#exec-overview #ex-table th,#exec-overview #ex-table td{box-sizing:border-box;position:static!important;width:auto!important;min-width:0!important;max-width:none!important;height:auto!important;overflow:hidden!important;text-overflow:clip!important;white-space:nowrap;padding:2px 1px;line-height:1.1;border-bottom:1px solid #E8EAF0;border-right:1px solid #E9EAF0;text-align:center;box-shadow:none!important}
+#exec-overview #ex-table thead tr:first-child th{height:31px!important;background:#EAEDF5!important;color:#2D3347!important;font-size:clamp(7.3px,.56vw,9.2px);font-weight:760;letter-spacing:-.02em;white-space:normal;word-break:keep-all}
+#exec-overview #ex-table thead tr:nth-child(2) th{height:24px!important;background:#F2F4F8!important;color:#455064!important;font-size:clamp(7.4px,.57vw,9.6px);font-weight:710}
+#exec-overview #ex-table thead th.group-base{background:#EFF0F4!important}
+#exec-overview #ex-table thead th.group-plan{background:#E8ECFD!important}
+#exec-overview #ex-table thead th.group-stock{background:#F2F1EB!important}
+#exec-overview #ex-table thead th.group-in{background:#E4EAFB!important}
+#exec-overview #ex-table thead th.group-progress{background:#E9F4F3!important}
+#exec-overview #ex-table thead th.group-supply{background:#F0EBF7!important}
+#exec-overview #ex-table tbody td{color:#303442;font-weight:540}
+#exec-overview #ex-table tbody tr:nth-child(even) td{background:#FCFCFE}
+#exec-overview #ex-table tbody tr:hover td{background:#EDF0FC!important}
+#exec-overview #ex-table tbody td.meta-cell{font-weight:630;color:#2E3443}
+#exec-overview #ex-table tbody td.meta-cell.merged{background:#F5F6FA!important;vertical-align:middle;border-right:1px solid #D7DBE6;font-weight:700}
+#exec-overview #ex-table tbody td.item-cell{font-weight:680;text-align:left!important;padding-left:3px;letter-spacing:-.027em}
+#exec-overview #ex-table tbody td.pct-cell{font-weight:700;color:#3E4CA3}
+#exec-overview #ex-table tbody td.num-w{background:#FCF5E9;color:#805600;font-weight:780}
+#exec-overview #ex-table tbody td.num-r{background:#FBEAEC;color:#9F243B;font-weight:800}
+#exec-overview #ex-table tbody td.num-ok{color:#42576C}
+#exec-overview #ex-table .group-edge{border-left:2px solid #CCD2DE!important}
+#exec-overview #ex-table tfoot td{height:29px!important;background:#EDEFF6!important;font-weight:780;color:#273044;border-top:2px solid #BAC2D6}
+#exec-overview #ex-table tfoot td.total-label{text-align:left;padding-left:8px;font-size:9px}
+#exec-overview #ex-table tr{break-inside:avoid}
+@media(max-width:1260px){#exec-overview{padding:8px 8px 9px}#exec-overview #ex-table{font-size:7.5px}#exec-overview #ex-table th,#exec-overview #ex-table td{padding-left:.5px;padding-right:.5px}#exec-overview .ex-desc,#exec-overview .ex-frame-tip{display:none}}
+@media(max-width:840px){#exec-overview{width:100%;min-width:720px;overflow-x:auto}#exec-overview #ex-table{font-size:7.5px}#exec-overview .ex-metrics{display:none}#exec-overview .ex-toolbar{justify-content:flex-start}}
 
 </style>
 </head>
@@ -418,19 +397,18 @@ button,input{font:inherit}button{cursor:pointer}button:focus-visible{outline:2px
 
   <section class="exec-overview" id="exec-overview" aria-label="MYD 종합 현황" hidden>
     <header class="ex-head">
-      <div><div class="ex-eyebrow">OPERATIONS INTELLIGENCE &nbsp; / &nbsp; S_D01</div><h1 class="ex-name">MYD 종합 현황 <span class="ex-desc">입고 · 진척 · 부품 수급 통합 모니터링</span></h1></div>
-      <div class="ex-tools"><span class="ex-demo">● 샘플 데이터</span><button class="ex-action" id="ex-full" type="button">확대 보기 ↗</button><button class="ex-action" id="ex-export" type="button">CSV 내보내기 ↗</button></div>
+      <div><div class="ex-eyebrow">OPERATIONS INTELLIGENCE &nbsp; / &nbsp; S_D01</div><h1 class="ex-name">MYD 종합 현황 <span class="ex-desc">36개 전체 열 · 동일 항목 병합 · 한 화면 조회</span></h1></div>
+      <div class="ex-tools"><span class="ex-demo">● 샘플 데이터</span><button class="ex-action" id="ex-full" type="button">크게 보기 ↗</button><button class="ex-action" id="ex-export" type="button">CSV 내보내기 ↗</button></div>
     </header>
     <section class="ex-metrics" id="ex-metrics" aria-label="경영 핵심 지표"></section>
     <div class="ex-toolbar">
-      <div class="ex-jumps" id="ex-jumps" hidden></div>
       <input type="search" id="ex-search" class="ex-input" placeholder="FAM1 · ITEM · 거래선 검색" aria-label="종합현황 검색">
       <select id="ex-risk-filter" class="ex-select" aria-label="위험 상태 필터"><option value="all">모든 ITEM</option><option value="risk">위험 포함</option><option value="warn">주의 포함</option><option value="clear">위험 없음</option></select>
     </div>
     <section class="ex-frame" aria-label="MYD 종합현황 전체 36개 열">
-      <div class="ex-frame-top"><div><span class="ex-frame-title">품목별 MYD 운영 · 수급 현황</span><span id="ex-row-label" class="ex-frame-sub">전체 항목</span></div><span class="ex-frame-tip">36개 전체 열 · 동일 분류값 자동 병합 · 단위: Meq / MGb</span></div>
+      <div class="ex-frame-top"><div><span class="ex-frame-title">품목별 MYD 운영 · 수급 현황</span><span id="ex-row-label" class="ex-frame-sub">전체 항목</span></div><span class="ex-frame-tip">기본 정보의 연속 동일값만 병합 · 단위: Meq / MGb</span></div>
       <div class="ex-scroller" id="ex-scroller"><table class="ex-table" id="ex-table"><thead id="ex-thead"></thead><tbody id="ex-tbody"></tbody><tfoot id="ex-tfoot"></tfoot></table></div>
-      <div class="ex-frame-foot"><span><i class="ex-dot normal"></i>정상 &nbsp; <i class="ex-dot warn"></i>주의 &nbsp; <i class="ex-dot danger"></i>위험 &nbsp; | &nbsp; 상태별 수량은 샘플 건수</span><span class="ex-flag"><strong>36개 전체 열</strong> · 스크롤 없는 통합표</span></div>
+      <div class="ex-frame-foot"><span><i class="ex-dot normal"></i>정상 &nbsp; <i class="ex-dot warn"></i>주의 &nbsp; <i class="ex-dot danger"></i>위험 &nbsp; | &nbsp; 상태별 수량은 샘플 건수</span><span class="ex-flag"><strong>36열 · 전체 행</strong> · 본문 스크롤 없음</span></div>
     </section>
   </section>
 
@@ -1019,8 +997,7 @@ function exHead(){
  let row1='<tr>',row2='<tr>';
  EX_GROUPS.forEach((g,groupIndex)=>{
   if(g.id==='base'){g.top.forEach((name,i)=>{let cls=(i<3?` sticky s${i+1}`:'')+' '+(i===0?'primary':'');row1+=`<th rowspan="2" class="${cls}" title="기본 정보" scope="col">${name}</th>`;});}
-  else{row1+=`<th data-group="${g.id}" class="${g.klass} ${groupIndex===1?'sep':''}" colspan="${g.subs.length}" scope="colgroup">${g.name}</th>`;g.subs.forEach((name,i)=>{row2+=`<th scope="col" class="${i===0?'sep ':''}${g.klass==='group-supply'?'supply-sub':''}" title="${g.name} / ${name}">${name}</th>`;});}
- });
+  else{row1+=`<th data-group="${g.id}" class="${g.klass} ${groupIndex===1?'sep':''}" colspan="${g.subs.length}" scope="colgroup">${g.name}</th>`;g.subs.forEach((name,i)=>{row2+=`<th scope="col" class="${i===0?'sep ':''}${g.klass==='group-supply'?'supply-sub':''}" title="${g.name} / ${name}">${name}</th>`;});} });
  return row1+'</tr>'+row2+'</tr>';
 }
 function exCell(v,idx){
@@ -1066,94 +1043,99 @@ function exCompactCell(value,index){
  return `<td class="${k}" title="${escapeHtml(exFlatTitles[index])}: ${escapeHtml(text)}">${escapeHtml(text)}</td>`;
 }
 function exCompactHeader(indices){return `<colgroup>${indices.map((i,j)=>`<col style="width:${j===0?'12%':j===1?'15%':j===2&&i===6?'24%':((i===6?'17':(70/indices.length)).toString()+'%')}">`).join('')}</colgroup><thead><tr>${indices.map(i=>`<th title="${escapeHtml(exFlatTitles[i])}" scope="col">${escapeHtml(exFlatTitles[i])}</th>`).join('')}</tr></thead>`;}
-function matrixColGroup(){
- const widths=[60,64,37,42,50,47,118,30,32,30,48,47,48,48,40,...Array(21).fill(27)];
- // Percentage widths share the available width exactly, without a horizontal scrollbar.
- const sum=widths.reduce((a,b)=>a+b,0);
- return '<colgroup>'+widths.map(w=>`<col style="width:${(w/sum*100).toFixed(4)}%">`).join('')+'</colgroup>';
-}
-function matrixHead(){
- let top='<tr>',bottom='<tr>',index=0;
- EX_GROUPS.forEach(g=>{
-   if(g.id==='base'){
-      g.top.forEach(name=>{top+=`<th rowspan="2" scope="col" title="${escapeHtml(name)}">${escapeHtml(name)}</th>`; index++});
-   }else{
-      let groupName=g.name==='MYD 당월 입고 (MGb)'?'MYD 당월 입고<br>(MGb)':g.name.includes(' 수급')?g.name.replace(' 수급','<br>수급'):g.name;
-      top+=`<th colspan="${g.subs.length}" scope="colgroup" class="${g.klass} matrix-sep">${groupName}</th>`;
-      g.subs.forEach((sub,i)=>{bottom+=`<th scope="col" class="${i===0?'matrix-sep':''}" title="${escapeHtml(g.name+' / '+sub)}">${escapeHtml(sub)}</th>`;index++});
+// All 36 columns remain visible on the main overview. Adjacent identical
+// descriptor values are merged vertically, scoped to their actual parent keys;
+// no numeric measures are merged, because they represent distinct row observations.
+const exDescriptorMergePaths=[
+ [0],[0,1],[0,1,2],[0,1,2,3],[0,1,2,4],[0,1,2,4,5]
+];
+const exColumnPercents=[6.1,5.2,3.0,4.0,4.9,3.9,11.0, 2.1,2.2,2.1, 3.2,2.6,2.6,2.6,3.0,
+ 1.96,1.96,1.96,1.96,1.96,1.96,1.96,1.96,1.96,
+ 1.96,1.96,1.96,1.96,1.96,1.96,1.96,1.96,1.96,1.96,1.96,1.96];
+function exMergedDescriptors(rows){
+ const skip=rows.map(()=>new Set()), spans=rows.map(()=>Array(7).fill(1));
+ for(let c=0;c<6;c++){
+  const path=exDescriptorMergePaths[c];
+  for(let r=0;r<rows.length;){
+   let stop=r+1;
+   const a=exAllCells(rows[r]);
+   while(stop<rows.length){
+    const b=exAllCells(rows[stop]);
+    if(!path.every(idx=>a[idx]===b[idx]))break;
+    stop++;
    }
- });
- return top+'</tr>'+bottom+'</tr>';
+   if(stop-r>1){spans[r][c]=stop-r;for(let x=r+1;x<stop;x++)skip[x].add(c)}
+   r=stop;
+  }
+ }
+ return {skip,spans};
 }
-function matrixSpanPlan(rows){
- const values=rows.map(exAllCells), result=values.map(()=>Array(7).fill(1));
- // Merge only IDENTICAL, consecutive descriptive fields. Never merge KPIs or numeric state counts.
- // Dependencies keep a repeated child label separated when it belongs to a new parent group.
- const parents={0:[],1:[0],2:[0,1],3:[0,1,2],4:[0,1,2],5:[0,1,2,4]};
- [0,1,2,3,4,5].forEach(col=>{
-  const dep=parents[col];let i=0;
-  while(i<rows.length){let j=i+1;
-   while(j<rows.length && values[j][col]===values[i][col] && dep.every(d=>values[j][d]===values[i][d]))j++;
-   result[i][col]=j-i;
-   for(let k=i+1;k<j;k++)result[k][col]=0;
-   i=j;
+function exMatrixCell(value,index,rowspan=1){
+ const isMeta=index<7, numeric=typeof value==='number';
+ const pct=index>=7&&index<=9;
+ let val=pct?value+'%':numeric?exFormat(value):String(value??'');
+ let classes=[];
+ if(isMeta)classes.push('meta-cell');
+ if(index===6)classes.push('item-cell');
+ if(pct)classes.push('pct-cell');
+ if([7,10,11,15,18,21,24,27,30,33].includes(index))classes.push('group-edge');
+ if(index>=15&&numeric){
+   const group=Math.floor((index-15)/3),p=(index-15)%3;
+   const state=group<3?['normal','warn','risk'][p]:['normal','risk','warn'][p];
+   if(state==='risk'&&value>0)classes.push('num-r');
+   else if(state==='warn'&&value>0)classes.push('num-w');
+   else classes.push('num-ok');
+ }
+ if(rowspan>1)classes.push('merged');
+ const attr=rowspan>1?` rowspan="${rowspan}"`:'';
+ const caption=`${exFlatTitles[index]}: ${val}${rowspan>1?' (동일값 '+rowspan+'행 병합)':''}`;
+ return `<td class="${classes.join(' ')}"${attr} title="${escapeHtml(caption)}">${escapeHtml(val)}</td>`;
+}
+function exFullMatrixHeader(){
+ const groups=EX_GROUPS;
+ let h1='<tr>', h2='<tr>';
+ groups.forEach(g=>{
+  if(g.id==='base'){
+   g.top.forEach((title,i)=>h1+=`<th class="group-base" rowspan="2" scope="col" title="${escapeHtml(title)}">${escapeHtml(title)}</th>`);
+  }else{
+   const label=g.id==='stock'?'전일재고':g.id==='arrival'?'당월 입고<br><small>(MGb)</small>':g.id==='inbound'?'MYD 입고':g.id==='outbound'?'MYD 공출':g.id==='chip'?'칩 진척':g.id==='substrate'?'SUBSTRATE':g.id==='pcb'?'PCB':g.id==='pmic'?'PMIC':g.id==='rcd'?'RCD':'MYD 계획 비중';
+   const title=escapeHtml(g.name);
+   h1+=`<th colspan="${g.subs.length}" class="${g.klass} ${['plan','stock','arrival','inbound','outbound','chip','substrate','pcb','pmic','rcd'].includes(g.id)?'group-edge':''}" title="${title}" scope="colgroup">${label}</th>`;
+   g.subs.forEach((subtitle,j)=>h2+=`<th class="${g.klass} ${j===0?'group-edge':''}" title="${title} / ${escapeHtml(subtitle)}" scope="col">${escapeHtml(subtitle)}</th>`);
   }
  });
- return result;
-}
-function matrixBody(rows){
- const spans=matrixSpanPlan(rows);
- return rows.map((row,r)=>{
-  const values=exAllCells(row);
-  return '<tr>'+values.map((v,c)=>{
-   if(c<=5 && spans[r][c]===0)return '';
-   let text=c>=7&&c<=9?`${v}%`:typeof v==='number'?exFormat(v):String(v??'');
-   let cls=[],attrs='';
-   if(c<=5){cls.push('identity');if(spans[r][c]>1){cls.push('merged');attrs+=` rowspan="${spans[r][c]}"`;}}
-   if(c===6)cls.push('item-name');
-   if(c>=7&&c<=9)cls.push('percent');
-   if(c>=10&&c<=14)cls.push('total-num');
-   if([7,10,11,15,18,21,24,27,30,33].includes(c))cls.push('matrix-sep');
-   if(c>=15){
-      const group=Math.floor((c-15)/3),pos=(c-15)%3;
-      const status=group<3?['ok','warn','risk'][pos]:['ok','risk','warn'][pos];
-      cls.push(v===0?'state-zero':'state-'+status);
-   }
-   const title=exFlatTitles[c]+': '+text;
-   return `<td class="${cls.join(' ')}"${attrs} title="${escapeHtml(title)}">${escapeHtml(text)}</td>`;
-  }).join('')+'</tr>';
- }).join('');
-}
-function matrixFoot(rows){
- if(!rows.length)return '';
- return '<tr>'+Array.from({length:36},(_,c)=>{
-  let text='';
-  if(c===0)text='합계';
-  else if(c===10||c===11||c===12||c===13||c>=15)text=exFormat(rows.reduce((a,row)=>a+(Number(exAllCells(row)[c])||0),0));
-  return `<td class="${[7,10,11,15,18,21,24,27,30,33].includes(c)?'matrix-sep':''}">${text}</td>`;
- }).join('')+'</tr>';
+ return h1+'</tr>'+h2+'</tr>';
 }
 function renderMatrix(){
  exView=exVisible();
- const col=matrixColGroup();
- const before=exTable.querySelector('colgroup');if(before)before.remove();
- exTable.insertAdjacentHTML('afterbegin',col);
- document.getElementById('ex-thead').innerHTML=matrixHead();
- document.getElementById('ex-tbody').innerHTML=exView.length?matrixBody(exView):'<tr><td colspan="36" style="padding:30px">검색 결과가 없습니다.</td></tr>';
- document.getElementById('ex-tfoot').innerHTML=matrixFoot(exView);
- document.getElementById('ex-row-label').textContent=`${exView.length}개 ITEM · 전체 36개 열 · 같은 분류값 병합`;
+ const {skip,spans}=exMergedDescriptors(exView);
+ // One logical table and fixed column widths prevent header/body offset drift.
+ const colgroup='<colgroup>'+exColumnPercents.map(x=>`<col style="width:${x}%">`).join('')+'</colgroup>';
+ const prev=exTable.querySelector('colgroup');if(prev)prev.remove();
+ const template=document.createElement('template');template.innerHTML=colgroup;
+ exTable.insertBefore(template.content.firstChild,exTable.firstChild);
+ document.getElementById('ex-thead').innerHTML=exFullMatrixHeader();
+ document.getElementById('ex-tbody').innerHTML=exView.length?exView.map((row,r)=>{
+  const values=exAllCells(row);
+  return '<tr>'+values.map((value,c)=>skip[r].has(c)?'':exMatrixCell(value,c,c<7?spans[r][c]:1)).join('')+'</tr>';
+ }).join(''):'<tr><td colspan="36" class="empty">검색 조건에 맞는 ITEM이 없습니다.</td></tr>';
+ if(exView.length){
+  const data=exView.map(exAllCells),numeric=[10,11,12,13,...Array.from({length:21},(_,i)=>i+15)];
+  const foot='<tr><td colspan="7" class="total-label">합계 · '+exView.length+'개 ITEM</td>'+Array.from({length:29},(_,offset)=>{
+   const c=offset+7;
+   if(!numeric.includes(c))return `<td>—</td>`;
+   const total=data.reduce((sum,arr)=>sum+(Number(arr[c])||0),0);
+   return `<td class="${[7,10,11,15,18,21,24,27,30,33].includes(c)?'group-edge':''}">${exFormat(total)}</td>`;
+  }).join('')+'</tr>';
+  document.getElementById('ex-tfoot').innerHTML=foot;
+ }else document.getElementById('ex-tfoot').innerHTML='';
+ document.getElementById('ex-row-label').textContent=`전체 ${exView.length}개 ITEM · 36개 전체 열`; 
  exSetMetrics(exView);
- // Fit the *whole* matrix to the panel height, not only a paginated subset.
- const h=exScroll.clientHeight||400;
- const cellHeight=Math.max(18,Math.min(38,Math.floor((h-57)/Math.max(1,exView.length+1))));
- exTable.style.setProperty('--matrix-row-height',cellHeight+'px');
+ // Fit the matrix to the available height without internal scrolling.
+ // 2 compact header rows + one totals row are accounted for in the available area.
+ const bodyHeight=Math.max(19,Math.floor((exScroll.clientHeight-55-29)/Math.max(exView.length,1)));
+ exTable.style.setProperty('--overview-cell-height',bodyHeight+'px');
 }
-const exJumps=document.getElementById('ex-jumps');
-exJumps.addEventListener('click',e=>{
- const b=e.target.closest('[data-jump]');if(!b)return;
- currentExView=b.dataset.jump;exJumps.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));
- renderMatrix();
-});
 document.getElementById('ex-full').addEventListener('click',()=>openModal());
 exSearch.addEventListener('input',renderMatrix);exRiskFilter.addEventListener('change',renderMatrix);
 document.getElementById('ex-export').addEventListener('click',()=>{
