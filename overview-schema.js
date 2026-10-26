@@ -9,11 +9,12 @@ const OVERVIEW_SCHEMA=(()=>{
    return {FAM1:first.fam,PRODUCT:first.product,DR:first.dr,VER:first.ver,응용:first.app,거래선:first.customer,ITEM:first.item,values,members,demo,progress,status:demo?(progress.some(v=>v[2]>0)?'위험':progress.some(v=>v[1]>0)?'주의':'정상'):'미제공'};
   });
  }
- function header(){const metadata=[...keyColumns,'총<br>제품수','MYD<br>제품수'].map((name,i)=>`<th rowspan="5" scope="col" data-field="${i}" class="${i<7?'summary-key':''} ${i===6?'key-end':''}">${name}</th>`).join(''),months=['M0','M1','M2','M3'];return `<tr>${metadata}<th rowspan="4" colspan="4" scope="colgroup" class="summary-production">생산계획 (억EQ)</th><th colspan="26" scope="colgroup" class="summary-status">STATUS</th></tr>
+ function header(){const metadata=[...keyColumns,'총<br>제품수','MYD<br>제품수'].map((name,i)=>`<th rowspan="5" scope="col" data-field="${i}" class="${i<7?'summary-key':''} ${i===6?'key-end':''}">${name}</th>`).join(''),months=['M0','M1','M2','M3'];return `<tr>${metadata}<th rowspan="4" colspan="4" scope="colgroup" class="summary-production">생산계획 (억EQ)</th><th colspan="26" scope="colgroup" class="summary-status"><span class="summary-status-label">STATUS</span></th></tr>
  <tr><th colspan="4" scope="colgroup" class="summary-planning">계획수립</th><th colspan="10" scope="colgroup" class="summary-execution">당월실행</th><th colspan="12" scope="colgroup" class="summary-material">자재확보</th></tr>
  <tr><th rowspan="2" colspan="4" scope="colgroup" class="summary-planning">(MYD 비중)</th><th colspan="10" scope="colgroup" class="summary-execution">M0</th>${stages.slice(3).map(name=>`<th rowspan="2" colspan="3" scope="colgroup" class="summary-material">${name}</th>`).join('')}</tr>
  <tr><th rowspan="2" scope="col" data-field="17" class="summary-execution">TTL</th>${stages.slice(0,3).map(name=>`<th colspan="3" scope="colgroup" class="summary-execution">${name}</th>`).join('')}</tr>
  <tr>${months.map((m,i)=>`<th scope="col" data-field="${9+i}" class="summary-production">${m}</th>`).join('')}${months.map((m,i)=>`<th scope="col" data-field="${13+i}" class="summary-planning">${m}</th>`).join('')}${stages.flatMap((_,stage)=>statuses.map((status,j)=>`<th scope="col" data-field="${18+stage*3+j}" class="summary-${status}">${status}</th>`)).join('')}</tr>`;}
  const widths=[4.5,5,3,4,4,4,9.5,3,3,...Array(8).fill(3.5),...Array(22).fill(32/22)];
- return {columns,keyColumns,stages,statuses,build,header,widths,totalIndex:7,mydIndex:8,productionStart:9,shareStart:13,ttlIndex:17,statusStart:18};
+ const readableWidths=[76,80,46,60,66,64,142,52,52,...Array(4).fill(60),...Array(4).fill(64),40,...Array(21).fill(36)];
+ return {columns,keyColumns,stages,statuses,build,header,widths,readableWidths,totalIndex:7,mydIndex:8,productionStart:9,shareStart:13,ttlIndex:17,statusStart:18};
 })();

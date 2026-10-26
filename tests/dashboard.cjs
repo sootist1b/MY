@@ -17,9 +17,9 @@ const output=path.join(require('node:os').tmpdir(),'my-dashboard-test');fs.mkdir
     tr.forEach((row,i)=>{let c=0;for(const cell of row.cells){while(matrix[i][c]!==undefined)c++;for(let j=0;j<cell.rowSpan;j++)matrix[i+j][c]=cell.textContent;c++;}});
     const expected=t===0?OVERVIEW_SCHEMA.build(source,true).map(r=>r.values):source.map(r=>(t===2?opsDefs.outbound.keys:t===3?supplyKeys.slice(3):t===4?materialKeys:Object.keys(r)).map(k=>r[k]));
     let mismatches=0;expected.forEach((row,i)=>row.forEach((v,j)=>{const value=typeof v==='number'?Number(matrix[i]?.[j]?.replaceAll(',','').replace('%','')):matrix[i]?.[j];if(value!==v)mismatches++;}));
-    return {tab,rows:matrix.length,expected:source.length,cols:matrix[0].length,mismatches,overflow:frame.scrollHeight>frame.clientHeight+1||frame.scrollWidth>frame.clientWidth+1,docOverflow:document.documentElement.scrollHeight>innerHeight+1,charts:document.querySelectorAll('#live-dashboard .live-card').length};
+    return {tab,rows:matrix.length,expected:source.length,cols:matrix[0].length,mismatches,overflow:frame.scrollHeight>frame.clientHeight+1||frame.scrollWidth>frame.clientWidth+1,overflowX:frame.scrollWidth>frame.clientWidth+1,overflowY:frame.scrollHeight>frame.clientHeight+1,docOverflow:document.documentElement.scrollHeight>innerHeight+1,charts:document.querySelectorAll('#live-dashboard .live-card').length};
    },tab);
-   assert.equal(result.rows,result.expected);assert.equal(result.cols,[39,22,23,27,18][tab]);assert.equal(result.charts,tab===0?0:3);assert(!result.mismatches&&!result.overflow&&!result.docOverflow,JSON.stringify({width,height,...result}));reports.push({width,height,...result});
+   assert.equal(result.rows,result.expected);assert.equal(result.cols,[39,22,23,27,18][tab]);assert.equal(result.charts,tab===0?0:3);assert(!result.mismatches&&(tab===0||!result.overflow)&&!result.docOverflow,JSON.stringify({width,height,...result}));reports.push({width,height,...result});
   }
  }
  await page.setViewportSize({width:1440,height:900});
@@ -34,6 +34,18 @@ const output=path.join(require('node:os').tmpdir(),'my-dashboard-test');fs.mkdir
  await page.locator('#planning-mode').selectOption('source');assert.equal(await page.locator('td[data-colindex="9"]').first().textContent(),'—');assert.equal(await page.locator('td[data-colindex="8"]').first().textContent(),'—');await page.locator('#planning-mode').selectOption('demo');
  const keyArea=await page.evaluate(()=>{const head=[...document.querySelectorAll('.summary-table th.summary-key')],cells=[...document.querySelectorAll('.summary-table td.summary-key')];return {head:head.map(c=>c.textContent),colors:[...new Set([...head,...cells].map(c=>getComputedStyle(c).backgroundColor))],bodyCols:[...new Set(cells.map(c=>+c.dataset.colindex))].sort((a,b)=>a-b)};});assert.deepEqual(keyArea.head,['FAM1','PRODUCT','DR','VER','응용','거래선','ITEM']);assert.equal(keyArea.colors.length,1);assert.deepEqual(keyArea.bodyCols,[0,1,2,3,4,5,6]);
  await page.screenshot({path:path.join(output,'dram-overview.png')});
+ // The overview keeps key columns fixed while horizontal scrolling reveals every metric.
+ const pinnedBefore=await page.locator('.summary-table th.summary-key').evaluateAll(es=>es.map(e=>e.getBoundingClientRect().left));
+ const leftOfMetric=await page.locator('td[data-colindex="9"]').first().evaluate(e=>e.getBoundingClientRect().left);
+ await page.locator('.live-table-frame').evaluate(e=>{e.scrollLeft=350;});await page.waitForTimeout(100);
+ const pinnedAfter=await page.locator('.summary-table th.summary-key').evaluateAll(es=>es.map(e=>e.getBoundingClientRect().left));pinnedAfter.forEach((x,i)=>assert(Math.abs(x-pinnedBefore[i])<1));
+ const movedMetric=await page.locator('td[data-colindex="9"]').first().evaluate(e=>e.getBoundingClientRect().left);assert(Math.abs((leftOfMetric-movedMetric)-350)<2);
+ const readable=await page.locator('.summary-table tbody td').first().evaluate(e=>parseFloat(getComputedStyle(e).fontSize));assert(readable>=13);
+ await page.locator('.live-table-frame').evaluate(e=>{e.scrollLeft=e.scrollWidth;});await page.waitForTimeout(100);const lastVisible=await page.locator('td[data-colindex="38"]').first().evaluate(e=>{const frame=e.closest('.live-table-frame').getBoundingClientRect(),r=e.getBoundingClientRect();return r.right<=frame.right+1&&r.left>=frame.left;});assert(lastVisible);
+ await page.locator('.live-table-frame').evaluate(e=>{e.scrollLeft=0;});
+ await page.locator('#summary-scroll-next').click();await page.waitForFunction(()=>document.querySelector('.live-table-frame').scrollLeft>30);await page.locator('#summary-scroll-prev').click();await page.waitForFunction(()=>document.querySelector('.live-table-frame').scrollLeft<1);
+ const headerBefore=await page.locator('.summary-table th[data-sort="0"]').evaluate(e=>e.getBoundingClientRect().top);await page.locator('.live-table-frame').evaluate(e=>{e.style.maxHeight='200px';e.scrollTop=100;});await page.waitForTimeout(50);const headerAfter=await page.locator('.summary-table th[data-sort="0"]').evaluate(e=>e.getBoundingClientRect().top);assert(Math.abs(headerBefore-headerAfter)<1);await page.locator('.live-table-frame').evaluate(e=>{e.style.maxHeight='';e.scrollTop=0;});
+ await page.screenshot({path:path.join(output,'readable-overview.png')});
  for(const tab of [1,2,4]){await page.locator(`[data-live-tab="${tab}"]`).click();const check=await page.evaluate(tab=>{const expected=tab===1?['WORKDATE','COMP_PRODGROUP','COMP_DESIGN_RULE','COMP_DENSITY','VERSION','APPLICATION','DENSITYB','MODEL','PKGTYPE','ITEM','MONTH','STAUS','PLANQTY','ACTUALQTY','STD_DAY_PLAN','ACT_DATE','ACT_DAY_PROGRESS','MYD_PLAN','MYD_ACTUALQTY','STD_MYD_DAY_PLAN','MYD_ACT_DATE','MYD_ACT_DAY_PROGRESS']:tab===2?opsDefs.outbound.keys:materialKeys;return {expected,shown:[...document.querySelectorAll('.live-table thead th[data-sort]')].map(c=>c.textContent)};},tab);assert.deepEqual(check.shown,check.expected);}
  // Inbound: requested shapes, chart-to-master linkage, sorting and exact source records.
  await page.locator('[data-live-tab="1"]').click();
